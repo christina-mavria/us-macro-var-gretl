@@ -53,5 +53,3 @@ All three variables are stationary at the 5% level:
 - **Inflation is persistent:** a shock to inflation remains positive for several quarters.
 
 See `impulse_responses.pdf` for the full IRF grid.
-
-## Repository Structure
