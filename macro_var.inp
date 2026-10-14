@@ -1,0 +1,55 @@
+# =====================================================================
+# US Macro VAR: GDP, Inflation, and Unemployment
+# Author: Christina Mavria
+# Date: 14.10.2026
+# Description: A three-variable VAR model estimated in Gretl
+# =====================================================================
+
+# --- 1. SETUP ---
+clear
+set echo off
+
+# --- 2. IMPORT DATA ---
+# Note: You need the three CSV files from FRED in the same folder:
+#   - GDPC1.csv     (Real GDP, quarterly)
+#   - CPIAUCSL.csv  (CPI, quarterly)
+#   - UNRATE.csv    (Unemployment Rate, quarterly)
+open GDPC1.csv
+append CPIAUCSL.csv
+append UNRATE.csv
+
+# --- 3. RESTRICT SAMPLE TO 1970 ONWARDS ---
+smpl 1970:1 ;
+
+# --- 4. CREATE TRANSFORMED VARIABLES ---
+series g_gdp = diff(log(GDPC1))
+series infl  = diff(log(CPIAUCSL))
+
+# --- 5. DESCRIPTIVE STATISTICS ---
+summary g_gdp infl UNRATE
+
+# --- 6. STATIONARITY TESTS (ADF) ---
+adf g_gdp  --c --lags=auto
+adf infl   --c --lags=auto
+adf UNRATE --c --lags=auto
+
+# --- 7. VAR LAG SELECTION ---
+var g_gdp infl UNRATE --lagselect --maxlag=8
+
+# --- 8. ESTIMATE VAR(4) ---
+var 4 g_gdp infl UNRATE --impulse-responses --variance-decomp
+
+# --- 9. GRANGER CAUSALITY (F-tests printed at bottom of VAR output) ---
+# The F-tests of zero restrictions are automatically shown after estimation.
+
+# --- 10. IMPULSE RESPONSES ---
+# The --impulse-responses option above computed them.
+# To view/plot in GUI: Analysis > Impulse responses
+# Cholesky ordering: g_gdp -> infl -> UNRATE
+# Horizon: 12 quarters, 95% confidence level
+
+# --- 11. FORECAST (optional) ---
+fcast addobs 8
+fcast
+
+# --- END OF SCRIPT ---
